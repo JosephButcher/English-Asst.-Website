@@ -11,15 +11,13 @@
       <div>
         <form method="post">
           <fieldset>
-            <legend>Account Information</legend>
-            <label for="fname">First name:</label><br>
-            <input type="text" id="fname" name="fname" placeholder="First Name">
-            <label for="lname">Last name:</label><br>
-            <input type="text" id="lname" name="lname" placeholder="Last Name">
+            <legend><h3>Account Information</h3></legend><br>
+            <label for="username">First name:</label><br>
+            <input type="text" id="username" name="username" placeholder="Username"><br>
             <label for="email">Email address:</label><br>
-            <input type="email" id="email" name="email" placeholder="Email Address">
+            <input type="email" id="email" name="email" placeholder="Email Address"><br>
             <label for="password">Password:</label><br>
-            <input type="password" id="password" name="password" placeholder="Password">
+            <input type="password" id="password" name="password" placeholder="Password"><br>
 
             <input type="submit" value="Submit Answers">
             </fieldset>
