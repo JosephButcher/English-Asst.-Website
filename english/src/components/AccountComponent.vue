@@ -1,33 +1,51 @@
 <script setup>
-/* import NavBar from './NavBarComponent.vue'; */
+  /* import NavBar from './NavBarComponent.vue'; */
 </script>
 
 <template>
   <body>
+    <h1>Account</h1>
     <div>
-      <h1>Account</h1>
+      <form method="post" class="container">
+        <fieldset>
+          <input type="text" name="name" placeholder="Name" required><br>
+          <input type="email" name="email" placeholder="Email" required><br>
+          <input type="password" name="password" placeholder="Password" required><br>
+          <input type="submit" value="Change Information">
+        </fieldset>
+      </form>
     </div>
-    <main>
-      <div>
-        <form method="post">
-          <fieldset>
-            <legend><h3>Account Information</h3></legend><br>
-            <label for="username">First name:</label><br>
-            <input type="text" id="username" name="username" placeholder="Username"><br>
-            <label for="email">Email address:</label><br>
-            <input type="email" id="email" name="email" placeholder="Email Address"><br>
-            <label for="password">Password:</label><br>
-            <input type="password" id="password" name="password" placeholder="Password"><br>
-
-            <input type="submit" value="Submit Answers">
-            </fieldset>
-        </form>
-      </div>
-    </main>
   </body>
-
 </template>
 
 <style scoped>
-
+* {
+  margin: 0;
+  padding: 0;
+}
+html {
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background-color: #3C3C3C;
+}
+div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 80%;
+}
+fieldset {
+  width: 100%;
+  background-color: #F3F3F3;
+}
 </style>
