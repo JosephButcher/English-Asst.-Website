@@ -30,13 +30,13 @@ header {
   display: flex;
 }
 .container {
-  position: absolute;
   top: 0;
   display: flex;
   justify-content: center;
   height: 5vh;
   width: 100vw;
   padding: 1rem;
+  margin-bottom: 1%;
   background: #76c4fa;
 }
 .nav {

@@ -1,5 +1,5 @@
 <script setup>
-import NavBar from './NavBarComponent.vue';
+import NavBar from "./NavBarComponent.vue";
 </script>
 
 
@@ -62,10 +62,8 @@ main div {
 }
 .introduction h5 {
   padding: 0 0 .5%;
-  font-family: "open-sans", sans-serif;
 }
 .introduction p {
-  font-family: "open-sans", sans-serif;
   width: 40%;
 }
 .roots, .vocabulary, .figuresOfSpeech, .commonlyConfusedWords {
@@ -106,7 +104,6 @@ main div {
 .roots p, .figuresOfSpeech p, .vocabulary p, .commonlyConfusedWords p{
   padding: 2%;
   width: 25%;
-  font-family: "open-sans", sans-serif;
   color: whitesmoke;
   font-size: 1rem;
 }
