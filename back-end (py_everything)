@@ -78,34 +78,12 @@ def create_account():
 
 
 # Route to log in
-@app.route('/login', methods=['POST'])
-def login_account():
-    data = request.json
-    username = data.get('username')
-    user_pass = data.get('password')
-
-    # Validate input
-    if not username or not user_pass:
-        return jsonify({'error': 'Username and password are required'}), 400
-
-    try:
-        query = """SELECT password FROM dbo.users WHERE username = ?"""
-        result = cursor.execute(query, username).fetchone()
-
-        # Check if the username exists and validate the password
-        if result and bcrypt.checkpw(user_pass.encode('utf-8'), result[0].encode('utf-8')):
-            return jsonify({'message': 'Logged in successfully'}), 200
-        else:
-            # Use a generic error message to avoid exposing whether the username exists
-            return jsonify({'error': 'Incorrect username or password'}), 401
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-
 # Route to load user cache
 @app.route('/load_user_cache/<int:user_id>', methods=['GET'])
 def load_user_cache(user_id):
+    """
+    Load the user's cache with unseen and attempted questions.
+    """
     unseen_query = """
         SELECT q.question_id
         FROM questions q
@@ -119,71 +97,106 @@ def load_user_cache(user_id):
     """
 
     try:
+        # Fetch unseen questions
         cursor.execute(unseen_query, user_id)
         unseen_questions = {row[0]: None for row in cursor.fetchall()}
 
+        # Fetch attempted questions
         cursor.execute(attempted_query, user_id)
         attempted_questions = {
-            row[0]: {"attempt_count": row[1], "accurate_count": row[2], "last_attempted": row[3]}
+            row[0]: {
+                "attempt_count": row[1],
+                "accurate_count": row[2],
+                "last_attempted": row[3].isoformat() if row[3] else None
+            }
             for row in cursor.fetchall()
         }
 
+        # Update user cache
         user_cache[user_id] = {
             "unseen_questions": unseen_questions,
             "attempted_questions": attempted_questions,
-            "last_updated": datetime.now()
+            "last_updated": datetime.now().isoformat()
         }
-        return jsonify(user_cache[user_id])
+
+        return jsonify(user_cache[user_id]), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Failed to load user cache: {str(e)}'}), 500
 
 
 # Route to get a question batch
 @app.route('/get_question_batch/<int:user_id>', methods=['GET'])
 def get_question_batch(user_id):
+    """
+    Retrieve a batch of questions for the user:
+    - 2 unseen questions (if available)
+    - 8 attempted questions (if available)
+    - Random questions to fill the batch if needed
+    """
     if user_id not in user_cache:
-        return jsonify({'error': 'User cache not loaded'}), 400
+        return jsonify({'error': 'User cache not loaded. Please load it first.'}), 400
 
-    batch = []
+    try:
+        batch = []
 
-    while len(user_cache[user_id]["unseen_questions"]) > 0 and len(batch) < 2:
-        question = next(iter(user_cache[user_id]["unseen_questions"].items()))
-        batch.append(question[0])
-        del user_cache[user_id]["unseen_questions"][question[0]]
+        # Add unseen questions
+        unseen_questions = user_cache[user_id]["unseen_questions"]
+        for _ in range(2):
+            if unseen_questions:
+                question_id, _ = unseen_questions.popitem()
+                batch.append(question_id)
 
-    while len(user_cache[user_id]["attempted_questions"]) > 0 and len(batch) < 10:
-        question = next(iter(user_cache[user_id]["attempted_questions"].items()))
-        batch.append(question[0])
-        del user_cache[user_id]["attempted_questions"][question[0]]
+        # Add attempted questions
+        attempted_questions = user_cache[user_id]["attempted_questions"]
+        for _ in range(8 - len(batch)):
+            if attempted_questions:
+                question_id, _ = attempted_questions.popitem()
+                batch.append(question_id)
 
-    while len(batch) < 10:
-        rand = random.randint(0, 612)
-        if rand not in batch:
-            batch.append(rand)
+        # Add random questions to complete the batch
+        while len(batch) < 10:
+            random_id = random.randint(0, 612)
+            if random_id not in batch:
+                batch.append(random_id)
 
-    return jsonify(batch)
+        return jsonify({'batch': batch}), 200
+    except Exception as e:
+        return jsonify({'error': f'Failed to retrieve question batch: {str(e)}'}), 500
 
 
 # Route to ask questions
 @app.route('/ask_questions', methods=['POST'])
 def ask_questions():
+    """
+    Retrieve details for a list of question IDs provided by the user.
+    """
     data = request.json
     user_id = data.get('user_id')
     question_ids = data.get('questions', [])
 
-    questions = []
-    for question_id in question_ids:
-        query = "SELECT * FROM questions WHERE question_id = ?"
-        cursor.execute(query, question_id)
-        question = cursor.fetchone()
-        if question:
-            questions.append({
-                'id': question[0],
-                'text': question[2],
-                'correct_answer': question[3]
-            })
+    # Validate input
+    if not user_id or not isinstance(question_ids, list) or not question_ids:
+        return jsonify({'error': 'Invalid input. Provide user_id and a list of question IDs.'}), 400
 
-    return jsonify({'questions': questions})
+    try:
+        questions = []
+
+        # Fetch question details
+        query = "SELECT question_id, text, correct_answer FROM questions WHERE question_id = ?"
+        for question_id in question_ids:
+            cursor.execute(query, question_id)
+            question = cursor.fetchone()
+            if question:
+                questions.append({
+                    'id': question[0],
+                    'text': question[1],
+                    'correct_answer': question[2]
+                })
+
+        return jsonify({'questions': questions}), 200
+    except Exception as e:
+        return jsonify({'error': f'Failed to fetch questions: {str(e)}'}), 500
+
 
 
 # Run the app
