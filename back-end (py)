@@ -1,0 +1,197 @@
+import pyodbc
+import random
+import bcrypt
+from datetime import datetime
+
+
+
+
+connection = pyodbc.connect("DRIVER={SQL Server}; SERVER=MCN110-LHN7M2BB; DATABASE=EnglishAssistant")
+cursor = connection.cursor()
+
+user_cache =  {}
+
+def createAccount():
+    username = input('Enter your username: ')
+    while len(userPass := input('Enter your password: ')) < 8:
+        print('Password too short')
+    while input('Enter your password again: ') != userPass:
+        print('Passwords do not match')
+    hashed_password = bcrypt.hashpw(userPass.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    userEmail = input('Enter your email: ')
+    while input('Enter your email again: ') != userEmail:
+        print('Emails do not match')
+    sql_query = """INSERT INTO users(username, password, email) VALUES (?,?,?)"""
+    cursor.execute(sql_query, (username, hashed_password, userEmail))
+    connection.commit()
+
+
+def loginAccount():
+    username = input('Enter your username: ')
+    try :
+        checkLogin = [x for x in connection.cursor().execute(f'SELECT username, password FROM dbo.users WHERE username = ?', username)]
+        MAX_ATTEMPTS = 3
+        for attempt in range(MAX_ATTEMPTS):
+            userPass = input('Please enter your password: ').encode('utf-8')
+            if bcrypt.checkpw(userPass, checkLogin[0][1].encode('utf-8')):
+                print("Logged in successfully")
+                break
+            else:
+                print("Incorrect password")
+        else:
+            print("Failed too many times")
+
+    except :
+        print('Incorrect username. Try again or create account.')
+
+
+def load_user_cache(userID):
+    # Query all questions the user hasn't seen
+    unseen_query = """
+        SELECT q.question_id
+        FROM questions q
+        LEFT JOIN user_progress up ON q.question_id = up.question_id AND up.user_id = ?
+        WHERE up.question_id IS NULL;
+        """
+
+    # Query all questions the user has attempted
+    attempted_query = """
+        SELECT question_id, attempt_count, accurate_count, last_attempted
+        FROM user_progress
+        WHERE user_id = ?;
+        """
+
+    # Execute the unseen questions query
+    cursor.execute(unseen_query, (userID))
+    unseen_questions = {row[0]:None for row in cursor.fetchall()}
+
+    # Execute the attempted questions query
+    cursor.execute(attempted_query, (userID))
+    attempted_questions = {
+        row[0]: {"attempt_count": row[1], "accurate_count": row[2], "last_attempted": row[3]}
+        for row in cursor.fetchall()
+    }
+
+    user_cache[userID] = {
+        "unseen_questions": unseen_questions,
+        "attempted_questions": attempted_questions,
+        "last_updated": datetime.now()
+    }
+
+
+
+# get questions they have struggled with first, haven't seen next, then if questions they haven't answered in a long time
+def get_question_batch(userID):
+    batch = []
+    # try:
+
+    while len(user_cache[userID]["unseen_questions"]) > 0 and len(batch) < 3:
+        question = next(iter(user_cache[userID]["unseen_questions"].items()))
+        batch.append(question[0])
+        del user_cache[userID]["unseen_questions"][question[0]]
+        # print(user_cache[userID]["unseen_questions"])
+
+    while len(user_cache[userID]["attempted_questions"]) > 0 and len(batch) < 10:
+        question = next(iter(user_cache[userID]["attempted_questions"].items()))
+        batch.append(question[0])
+        del user_cache[userID]["attempted_questions"][question[0]]
+
+    if len(batch) < 10:
+        load_user_cache(userID)
+
+    while len(batch) < 10:
+        rand = random.randint(0, 612)
+        if rand not in batch: batch.append(rand)
+
+
+    try:
+        while len(batch) < 10:
+            if (randKey := random.choice(list(question.keys()))) not in batch: batch.append(randKey)
+        load_user_cache(userID)
+    except:
+        print('no more questions')
+        load_user_cache(userID)
+
+    return batch
+
+
+#
+def ask_questions(userID, batch):
+    for question in batch:
+        query = "SELECT * FROM questions WHERE question_id = ?"
+        cursor.execute(query, (question))
+        storage = cursor.fetchone()
+        print(storage[2])
+
+        trackAttempt(userID, storage, input())
+
+
+
+
+
+def trackAttempt(userID, question, answer):
+    is_correct = (
+        (question[1] == "multiple_choice" and answer.lower() == question[3][0].lower()) or
+        question[3].lower() == answer.lower()
+    )
+
+    outcome = 1 if is_correct else 0
+    question_id = question[0]
+    print("The correct answer is: ", question[3])
+    try:
+        cursor = connection.cursor()
+
+        cursor.execute(
+            '''
+            INSERT INTO dbo.user_progress (user_id, question_id)
+            VALUES (?, ?)
+            ''',
+            userID, question_id
+        )
+
+        if outcome == 1:
+            cursor.execute(
+                '''
+                UPDATE dbo.user_progress
+                SET accurate_count = accurate_count + 1,
+                    attempt_count = attempt_count + 1
+                WHERE user_id = ? AND question_id = ?
+                ''',
+                userID, question_id
+            )
+        else:
+            cursor.execute(
+                '''
+                UPDATE dbo.user_progress
+                SET attempt_count = attempt_count + 1
+                WHERE user_id = ? AND question_id = ?
+                ''',
+                userID, question_id
+            )
+
+        connection.commit()
+
+        print(f"Attempt recorded as '{outcome}' for user {userID} on question {question_id}.\n")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        connection.rollback()
+
+    finally:
+        cursor.close()
+
+
+
+
+def main():
+    jacksonID = 2
+    load_user_cache(jacksonID)
+    # for x in user_cache[jacksonID]["unseen_questions"]:
+    #     print(x)
+    print(len(user_cache[jacksonID]["unseen_questions"]),user_cache[jacksonID]["unseen_questions"])
+    # while len(user_cache[jacksonID]["unseen_questions"]) > 100:
+    questions = get_question_batch(jacksonID)
+    ask_questions(jacksonID, questions)
+
+
+main()
