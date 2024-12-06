@@ -1,5 +1,19 @@
 <script setup>
 import NavBar from "./NavBarComponent.vue";
+import { reactive, ref} from "vue";
+
+const formData = reactive({
+  name: '',
+  email: '',
+  password: '',
+});
+
+const isSubmitted = ref(false);
+
+function handleSubmit() {
+  isSubmitted.value = true;
+  console.log("Form submitted with: ", formData);
+}
 </script>
 
 <template>
@@ -7,12 +21,14 @@ import NavBar from "./NavBarComponent.vue";
   <NavBar />
     <h1>Account</h1>
     <div>
-      <form method="post" class="container">
+      <form @submit.prevent="handleSubmit" class="container">
         <fieldset>
-          <input type="text" name="name" placeholder="Name" required><br>
-          <input type="email" name="email" placeholder="Email" required><br>
-          <input type="password" name="password" placeholder="Password" required><br>
-          <input type="submit" value="Change Information">
+          <input type="text" id="name" v-model="formData.name" placeholder="Name" required><br>
+          <input type="email" id="email" v-model="formData.email" placeholder="Email" required><br>
+          <input type="password" id="password" v-model="formData.password" placeholder="Password" required><br>
+          <button type="submit">
+            {{ isSubmitted ? "Change Information" : "Submit Information" }}
+          </button>
         </fieldset>
       </form>
     </div>
@@ -71,7 +87,7 @@ fieldset {
   background-color: #F8F8FF;
   border: none;
 }
-input {
+input, button {
   align-self: center;
   position: relative;
   width: 25%;
@@ -82,13 +98,14 @@ input {
   border-radius: 30px;
   font-size: 1.2em;
 }
-input[type="submit"] {
+button {
+  width: 25%;
   cursor: pointer;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   background-color: #76c4fa;
   color: #4A4A4A;
 }
-input[type="submit"]:hover {
+button:hover {
   background-color:  #6aa7d1;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
