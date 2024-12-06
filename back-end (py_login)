@@ -1,0 +1,102 @@
+from flask import Flask, request, jsonify, render_template
+import pyodbc
+import random
+import bcrypt
+from datetime import datetime
+
+# Flask app initialization
+app = Flask(__name__)
+
+# Database connection
+connection = pyodbc.connect("DRIVER={SQL Server}; SERVER=MCN110-LHN7M2BB; DATABASE=EnglishAssistant")
+cursor = connection.cursor()
+
+user_cache = {}
+
+
+# Route for the home page
+@app.route('/')
+def home():
+    return render_template('index.html')  # Replace with your HTML file
+
+
+# Route to create a new account
+@app.route('/create_account', methods=['POST'])
+def create_account():
+    # Ensure the 'users' table exists
+    table_check_query = """
+    IF NOT EXISTS (
+        SELECT * FROM INFORMATION_SCHEMA.TABLES 
+        WHERE TABLE_NAME = 'users'
+    )
+    BEGIN
+        CREATE TABLE dbo.users (
+            user_id INT IDENTITY(1,1) PRIMARY KEY,
+            username VARCHAR(30) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            email VARCHAR(50) NOT NULL UNIQUE
+        )
+    END;
+    """
+    cursor.execute(table_check_query)
+    connection.commit()
+
+    # Get user details from the request
+    data = request.json
+    username = data.get('username')
+    user_pass = data.get('password')
+    user_email = data.get('email')
+
+    # Validate inputs
+    if not username or not user_email or not user_pass:
+        return jsonify({'error': 'All fields (username, password, email) are required'}), 400
+    if len(user_pass) < 8:
+        return jsonify({'error': 'Password must be at least 8 characters long'}), 400
+    if '@' not in user_email or '.' not in user_email:  # Basic email validation
+        return jsonify({'error': 'Invalid email format'}), 400
+
+    # Check if username or email already exists
+    check_user_query = """
+    SELECT COUNT(*) FROM users WHERE username = ? OR email = ?
+    """
+    cursor.execute(check_user_query, (username, user_email))
+    user_exists = cursor.fetchone()[0]
+    if user_exists:
+        return jsonify({'error': 'Username or email already exists'}), 409
+
+    # Hash the password
+    hashed_password = bcrypt.hashpw(user_pass.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    # Insert user into the database
+    try:
+        sql_query = """INSERT INTO users(username, password, email) VALUES (?, ?, ?)"""
+        cursor.execute(sql_query, (username, hashed_password, user_email))
+        connection.commit()
+        return jsonify({'message': 'Account created successfully'}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# Route to log in
+@app.route('/login', methods=['POST'])
+def login_account():
+    data = request.json
+    username = data.get('username')
+    user_pass = data.get('password')
+
+    # Validate input
+    if not username or not user_pass:
+        return jsonify({'error': 'Username and password are required'}), 400
+
+    try:
+        query = """SELECT password FROM dbo.users WHERE username = ?"""
+        result = cursor.execute(query, username).fetchone()
+
+        # Check if the username exists and validate the password
+        if result and bcrypt.checkpw(user_pass.encode('utf-8'), result[0].encode('utf-8')):
+            return jsonify({'message': 'Logged in successfully'}), 200
+        else:
+            # Use a generic error message to avoid exposing whether the username exists
+            return jsonify({'error': 'Incorrect username or password'}), 401
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
