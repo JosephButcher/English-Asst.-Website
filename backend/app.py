@@ -44,8 +44,9 @@ def create_account():
     # Get user details from the request
     data = request.json
     username = data.get('username')
-    user_pass = data.get('password')
     user_email = data.get('email')
+    user_pass = data.get('password')
+
 
     # Validate inputs
     if not username or not user_email or not user_pass:
