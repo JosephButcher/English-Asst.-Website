@@ -77,6 +77,34 @@ def create_account():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/login_account', methods=['POST'])
+def login_account():
+    # Get login details from the request
+    data = request.json
+    username = data.get('username')
+    user_pass = data.get('password')
+
+    # Validate inputs
+    if not username or not user_pass:
+        return jsonify({'error': 'Both username and password are required'}), 400
+
+    try:
+        # Query to fetch the user's data (password) from the database
+        cursor.execute('SELECT username, password FROM dbo.users WHERE username = ?', (username,))
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({'error': 'Incorrect username. Try again or create an account.'}), 404
+
+        # Verify the password
+        stored_password = user[1]
+        if bcrypt.checkpw(user_pass.encode('utf-8'), stored_password.encode('utf-8')):
+            return jsonify({'message': 'Logged in successfully'}), 200
+        else:
+            return jsonify({'error': 'Incorrect password'}), 400
+
+    except Exception as e:
+        return jsonify({'error': f'An error occurred: {str(e)}'}), 500
 
 # Route to load user cache
 @app.route('/load_user_cache/<int:user_id>', methods=['GET'])
