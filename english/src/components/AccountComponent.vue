@@ -9,10 +9,35 @@ const formData = reactive({
 });
 
 const isSubmitted = ref(false);
+const errorMessage = ref('');
+
+const originalData = reactive({
+  name: '',
+  email: '',
+  password: '',
+});
 
 function handleSubmit() {
+  if (
+  formData.name === originalData.name &&
+  formData.email === originalData.email &&
+  formData.password === originalData.password
+  )
+  {
+  alert("At least one field must be different.");
+  return;
+}
+  errorMessage.value = "";
   isSubmitted.value = true;
   console.log("Form submitted with: ", formData);
+
+  originalData.name = formData.name;
+  originalData.email = formData.email;
+  originalData.password = formData.password;
+
+  formData.name = '';
+  formData.email = '';
+  formData.password = '';
 }
 </script>
 
@@ -26,6 +51,7 @@ function handleSubmit() {
           <input type="text" id="name" v-model="formData.name" placeholder="Name" required><br>
           <input type="email" id="email" v-model="formData.email" placeholder="Email" required><br>
           <input type="password" id="password" v-model="formData.password" placeholder="Password" required><br>
+          <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
           <button type="submit">
             {{ isSubmitted ? "Change Information" : "Submit Information" }}
           </button>

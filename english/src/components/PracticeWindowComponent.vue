@@ -4,14 +4,15 @@ import { ref } from "vue";
 const isVisible = ref(true);
 const closeWindow = () => {
   isVisible.value = false;
+  window.history.back();
 };
 
 const data = ref ([{
-  word: "Happy",
-  pronunciation: "hæpi",
-  definition: "Feeling or showing pleasure or contentment.",
-  example: "She was happy with her results.",
-  synonyms: ["Joyful", "content", "pleased"]
+  word: "Inquisitive",
+  partOfSpeech: "Adjective",
+  definition: "Curious or eager to learn; inclined to ask questions.",
+  example: "The inquisitive student asked numerous questions during the lecture to fully understand the topic.",
+  synonyms: ["Nosy", "analytical"]
 }])
 </script>
 
@@ -24,10 +25,13 @@ const data = ref ([{
       </div>
       <div v-for="(item, index) in data" :key="index" class="window-content">
         <h3 class="word">{{ item.word }}</h3>
-        <p class="pronunciation"><strong>Pronunciation:&nbsp;</strong>{{ item.pronunciation }}</p>
+        <p class="partOfSpeech"><strong>Part of Speech:&nbsp;</strong>{{ item.partOfSpeech }}</p>
         <p class="definition"><strong>Definition:&nbsp;</strong>{{ item.definition }}</p>
         <p class="example"><strong>Example:&nbsp;</strong>{{ item.example }}</p>
         <p class="synonyms"><strong>Synonyms:&nbsp;</strong>{{ item.synonyms.join(', ') }}</p>
+      </div>
+      <div class="continue-button-container">
+        <button class="continue-button" @click="Continue">Continue</button>
       </div>
     </div>
   </div>
@@ -46,13 +50,16 @@ const data = ref ([{
   align-items: center;
 }
 .window{
-  width: 50vw;
-  height: 95vh;
+  width: 65vw;
+  height: 85vh;
   background: whitesmoke;
   border-radius: 15px;
-  padding: 15px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   overflow-y: auto;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
 }
 .window-header {
   display: flex;
@@ -64,32 +71,44 @@ const data = ref ([{
   background: none;
   border: none;
   cursor: pointer;
-  width: 8%;
   font-size: 1vw;
   color: #4A4A4A;
 }
 .window-content {
-  padding: 15px;
-  border-bottom: 1px solid #ddd;
+  padding: 15px 0;
 }
 .word {
-  font-size: 1.125vw;
+  font-size: 1.5rem;
+  color: #007BFF;
 }
-.pronunciation {
-  font-size: 1vw;
-  font-weight: lighter;
+.partOfSpeech, .definition, .example, .synonyms {
+  font-size: 1.125rem;
+  margin: 5px 0;
+  color: #4A4A4A;
 }
-.definition {
-  font-size: 1vw;
-}
-.example {
-  font-size: 1vw;
-  font-style: italic;
-}
-.synonyms {
-  font-size: 1vw;
+.partOfSpeech strong, .definition strong, .example strong, .synonyms strong {
+  color: #000080;
 }
 h2 {
   color: #4A4A4A;
+}
+.continue-button-container {
+  border-top: 2px solid #4A4A4A;
+  padding-top: 10px;
+}
+.continue-button {
+  width: 100%;
+  padding: 10px;
+  margin-top: auto;
+  background-color: #76c4fa;
+  color: whitesmoke;
+  font-size: 1.25rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.continue-button:hover {
+  background-color: #6aa7d1;
 }
 </style>

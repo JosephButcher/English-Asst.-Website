@@ -57,8 +57,8 @@ import NavBar from './NavBarComponent.vue';
 .example-window {
   display: flex;
   position: relative;
-  height: 90vh;
-  width: 75vw;
+  height: 65vh;
+  width: 85vw;
   border: 6px double #4A4A4A;
   border-radius: 10px;
   margin-right: 1rem;
