@@ -6,7 +6,7 @@
   <header>
     <nav class="container">
       <ul class="nav">
-        <li class="left-item"><router-link to="/">JoJiMa</router-link></li>
+        <li class="left-item"><router-link to="/">JoJaMi</router-link></li>
 
           <li class="middle-items"><router-link to="/RootsComponent">Latin/Greek Roots</router-link></li>
           <li class="middle-items"><router-link to="/VocabularyComponent">Vocabulary</router-link></li>
@@ -28,6 +28,9 @@
 }
 header {
   display: flex;
+  position: fixed;
+  top: 0;
+  z-index: 1000;
 }
 .container {
   top: 0;
@@ -48,6 +51,33 @@ header {
   padding: 0 1.5em 0;
   margin: 0;
 }
+.nav li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+}
+.nav li:not(:last-child)::after {
+  content: "|";
+  position: absolute;
+  right: -0.5rem;
+  color: whitesmoke;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.nav a {
+  text-decoration: none;
+  color: whitesmoke;
+  display: block;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  text-align: center;
+}
+.nav li:hover{
+  background: #6aa7d1;
+  border-radius: 5px;
+}
 .middle-items, .left-item, .right-item {
   flex: 1;
 }
@@ -58,20 +88,5 @@ header {
 }
 .middle-items li {
   padding: 0 0.5rem;
-}
-.nav a {
-  text-decoration: none;
-  color: whitesmoke;
-  font-weight: 750;
-}
-.nav a:hover {
-  text-decoration: underline;
-}
-.nav li a {
-  display: block;
-  padding: 0.5rem 1rem;
-  text-align: center;
-  text-decoration: none;
-  font-weight: 750;
 }
 </style>

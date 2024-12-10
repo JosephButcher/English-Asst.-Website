@@ -42,6 +42,7 @@ import NavBar from "./NavBarComponent.vue";
   display: flex;
   flex-direction: column;
   width: 100%;
+  padding-top: calc(4vh);
 }
 main div {
   display: flex;

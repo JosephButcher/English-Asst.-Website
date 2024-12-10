@@ -43,6 +43,7 @@ main {
   height: 100vh;
   width: 100vw;
   background-color: #FFFFFF;
+  padding-top: calc(5vh + 2rem);
 }
 h1 {
   align-self: center;
@@ -101,12 +102,14 @@ input, button {
 button {
   width: 25%;
   cursor: pointer;
+  border: 2px outset whitesmoke;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   background-color: #76c4fa;
-  color: #4A4A4A;
+  color: whitesmoke;
 }
 button:hover {
   background-color:  #6aa7d1;
+  border: 2px inset whitesmoke;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 </style>
