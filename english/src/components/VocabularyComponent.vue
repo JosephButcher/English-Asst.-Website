@@ -1,5 +1,6 @@
 <script setup>
 import NavBar from './NavBarComponent.vue';
+import vocabExample from '../assets/images/vocabExample.png';
 </script>
 
 <template>
@@ -18,18 +19,14 @@ import NavBar from './NavBarComponent.vue';
       Through engaging lessons and dynamic exercises, we aspire to inspire a lifelong appreciation for the power of words, ensuring that our learners not only build their vocabulary but also gain the tools they need to express themselves with clarity, confidence, and impact.</p>
 
     <div class="example-container">
-      <main class="example-window"></main>
-
+      <main class="example-window"><img :src="vocabExample" alt="Vocabulary practice example"></main>
       <div class="example-explanation">
-        <p>This image is an example of what practicing vocabulary is like. Learners are presented with a new word, accompanied by its definition, audio for its pronunciation, an example use of the word, and a synonym or two. Learners are expected to read through all of the information and hit the next button, where they will be taken to a spelling question, and after that the new word will be added to a mix of all the words they've learned. This cycle will continue as students learn new words and are quizzed on each word they've passed the spelling question for.</p>
-        <p>If a learner fails the spelling question, they will simply be redirected to the "new word" screen.</p>
-
-        <button @click="$router.push('/PracticeWindowComponent')" class="practice-button">Practice</button>
+        <p>This image is an example of what practicing vocabulary is like. Learners are presented with a new word accompanied by its part of speech, definition, an example use of the word, and a synonym or two. Learners are expected to read through all of the information and hit the continue button, where they will be taken to a spelling question, and after that the new word will be added to a mix of all the words they've learned. This cycle will continue as students learn new words and are quizzed on each word they've passed the spelling question for.</p>
+        <p>If a learner fails the spelling question, they will simply be redirected to the previous screen.</p>
       </div>
     </div>
-
+    <button @click="$router.push('/PracticePageComponent')" class="practice-button">Start Practicing</button>
   </div>
-
 </template>
 
 <style scoped>
@@ -57,11 +54,16 @@ import NavBar from './NavBarComponent.vue';
 .example-window {
   display: flex;
   position: relative;
-  height: 65vh;
+  height: 69vh;
   width: 85vw;
   border: 6px double #4A4A4A;
   border-radius: 10px;
-  margin-right: 1rem;
+  margin: 1.3rem 1rem auto 2rem;
+}
+.example-window img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 h1 {
   text-align: center;
@@ -110,8 +112,9 @@ h3 {
   background-color: #76c4fa;
   cursor: pointer;
   border: 2px outset whitesmoke;
+  border-radius: 15px;
   height: 30%;
-  width: 40%;
+  width: 80%;
   padding: 1%;
   margin: 1.5rem 0 0 0;
   font-size: 1.5vw;

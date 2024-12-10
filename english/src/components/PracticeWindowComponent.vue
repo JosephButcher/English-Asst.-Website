@@ -25,7 +25,7 @@ const data = ref ([{
       </div>
       <div v-for="(item, index) in data" :key="index" class="window-content">
         <h3 class="word">{{ item.word }}</h3>
-        <p class="partOfSpeech"><strong>Part of Speech:&nbsp;</strong>{{ item.partOfSpeech }}</p>
+        <p class="partOfSpeech">{{ item.partOfSpeech }}</p>
         <p class="definition"><strong>Definition:&nbsp;</strong>{{ item.definition }}</p>
         <p class="example"><strong>Example:&nbsp;</strong>{{ item.example }}</p>
         <p class="synonyms"><strong>Synonyms:&nbsp;</strong>{{ item.synonyms.join(', ') }}</p>
@@ -70,26 +70,45 @@ const data = ref ([{
 .exit-button {
   background: none;
   border: none;
+  width: 8%;
   cursor: pointer;
-  font-size: 1vw;
+  font-size: 2vw;
   color: #4A4A4A;
+}
+.exit-button:hover {
+  background-color: rgba(0, 0, 0, 0.3);
 }
 .window-content {
-  padding: 15px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px 0 20px 0;
+  height: 80%;
 }
 .word {
-  font-size: 1.5rem;
+  display: flex;
+  justify-content: left;
+  align-items: flex-start;
+  font-size: 3.5rem;
   color: #007BFF;
+  margin: 1vh auto 1vh 1vh;
+}
+.partOfSpeech {
+  display: flex;
+  justify-content: left;
+  align-items: flex-start;
 }
 .partOfSpeech, .definition, .example, .synonyms {
-  font-size: 1.125rem;
-  margin: 5px 0;
+  font-size: 2.5vh;
+  margin: 3vh auto 3vh 1vh;
   color: #4A4A4A;
 }
-.partOfSpeech strong, .definition strong, .example strong, .synonyms strong {
+.definition strong, .example strong, .synonyms strong {
   color: #000080;
+  font-style: italic;
 }
 h2 {
+  font-size: 4vh;
   color: #4A4A4A;
 }
 .continue-button-container {
