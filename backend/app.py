@@ -1,20 +1,18 @@
-from flask import Flask, request, jsonify, render_template, CORS
-import pyodbc
+from flask import request, jsonify, render_template
 import random
 import bcrypt
 from datetime import datetime
+from backend import create_app
+from backend.config import config
 
+# Initialize Flask app
+app = create_app()
 
-# Flask app initialization
-app = Flask(__name__)
-CORS(app)
-
-# Database connection
-connection = pyodbc.connect("DRIVER={SQL Server}; SERVER=MCN110-LHN7M2BB; DATABASE=EnglishAssistant")
+# Database connection and cursor
+connection = config.DB_CONNECTION_STRING
 cursor = connection.cursor()
 
 user_cache = {}
-
 
 # Route for the home page
 @app.route('/')
@@ -79,7 +77,6 @@ def create_account():
         return jsonify({'error': str(e)}), 500
 
 
-# Route to log in
 # Route to load user cache
 @app.route('/load_user_cache/<int:user_id>', methods=['GET'])
 def load_user_cache(user_id):
@@ -200,7 +197,6 @@ def ask_questions():
         return jsonify({'error': f'Failed to fetch questions: {str(e)}'}), 500
 
 
-
 # Run the app
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=config.DEBUG)
