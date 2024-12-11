@@ -19,7 +19,9 @@ const userProgress = ref({});
 // Fetch word data from the server
 const fetchWordData = async () => {
   try {
-    const response = await axios.get("http://your-flask-server-url/start_new_word");
+    const response = await axios.get("http://127.0.0.1:5000/start_new_word");
+    console.log("Response Data:", response.data); // Log the response data
+
     if (response.data && response.data.word) {
       wordData.value = response.data;
       correctWord.value = wordData.value.word; // Ensure correctWord is assigned a valid string
@@ -37,6 +39,7 @@ const fetchWordData = async () => {
   }
 };
 
+
 // Shuffle answer options
 const shuffleOptions = (options) => options.sort(() => Math.random() - 0.5);
 
@@ -48,7 +51,7 @@ const moveToSpellingStep = () => {
 // Check the user's spelling
 const checkSpelling = async () => {
   try {
-    const response = await axios.post("http://your-flask-server-url/check_spelling", {
+    const response = await axios.post("http://127.0.0.1:5000/check_spelling", {
       word: userSpelling.value,
       correct_word: correctWord.value,
     });
@@ -62,30 +65,7 @@ const checkSpelling = async () => {
   }
 };
 
-const submitAnswer = async (question) => {
-  try {
-    const isCorrect = userAnswer.value === question.correct_answer;
-    await axios.post("http://your-flask-server-url/update_user_progress", {
-      user_id: 1,
-      word_id: wordData.value.word_id,
-      correct_answer: question.correct_answer,
-      user_answer: userAnswer.value,
-    });
-    if (isCorrect) {
-      const currentIndex = questions.value.indexOf(question);
-      if (currentIndex === questions.value.length - 1) {
-        currentStep.value = 1;
-        fetchWordData();
-      } else {
-        userAnswer.value = "";
-      }
-    } else {
-      alert("Incorrect answer. Try again!");
-    }
-  } catch (error) {
-    console.error("Error submitting answer:", error);
-  }
-};
+
 
 // Initialize the word data
 fetchWordData();
@@ -101,13 +81,14 @@ fetchWordData();
 
       <!-- Word details step -->
       <div v-if="currentStep === 1" class="window-content">
-        <h3 class="word">{{ wordData.word }}</h3>
+        <h3 class="word">{{ wordData.word }}</h3> <!-- Check that wordData.word is valid -->
         <p class="partOfSpeech">{{ wordData.part_of_speech }}</p>
         <p class="definition"><strong>Definition:</strong> {{ wordData.definition }}</p>
         <p class="example"><strong>Example:</strong> {{ wordData.example_sentence }}</p>
         <p class="synonyms"><strong>Synonyms:</strong> {{ wordData.synonyms }}</p>
         <button class="continue-button" @click="moveToSpellingStep">Continue</button>
       </div>
+
 
       <!-- Spelling step -->
       <div v-if="currentStep === 2" class="window-content">
