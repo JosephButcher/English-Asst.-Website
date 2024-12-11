@@ -54,7 +54,7 @@ import vocabExample from '../assets/images/vocabExample.png';
 .example-window {
   display: flex;
   position: relative;
-  height: 69vh;
+  height: 64vh;
   width: 85vw;
   border: 6px double #4A4A4A;
   border-radius: 10px;

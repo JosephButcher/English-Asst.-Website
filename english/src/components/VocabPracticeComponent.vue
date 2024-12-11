@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, nextTick } from 'vue';
 import axios from "axios";
 
 const isVisible = ref(true);
@@ -10,9 +10,8 @@ const closeWindow = () => {
 
 const currentStep = ref(1); // 1: Word details, 2: Spelling, 3: Quiz
 const wordData = ref({});
-const questions = ref([]);
-const userSpelling = ref(""); // Will hold the typed word
-const userAnswer = ref("");
+const questions = ref([]);  // Initialize questions as an empty array
+const userAnswer = ref({});  // Use an object to manage answers per question
 const correctWord = ref("");
 const userProgress = ref({});
 
@@ -25,10 +24,18 @@ const fetchWordData = async () => {
     if (response.data && response.data.word) {
       wordData.value = response.data;
       correctWord.value = wordData.value.word; // Ensure correctWord is assigned a valid string
-      questions.value = wordData.value.questions.map((question) => ({
-        ...question,
-        options: shuffleOptions([question.correct_answer, "Option B", "Option C", "Option D"]),
-      }));
+      // Check if questions exist and ensure options are valid
+      if (Array.isArray(wordData.value.questions)) {
+        questions.value = wordData.value.questions.map((question) => {
+          const options = question.options || [];  // Default to empty array if options are undefined
+          return {
+            ...question,
+            options: shuffleOptions([question.correct_answer, ...options, "Option B", "Option C", "Option D"]),
+          };
+        });
+      } else {
+        console.error("No questions found in the response.");
+      }
       userProgress.value = response.data.user_progress;
       currentStep.value = userProgress.value.current_step;
     } else {
@@ -39,7 +46,6 @@ const fetchWordData = async () => {
   }
 };
 
-
 // Shuffle answer options
 const shuffleOptions = (options) => options.sort(() => Math.random() - 0.5);
 
@@ -48,24 +54,55 @@ const moveToSpellingStep = () => {
   currentStep.value = 2;
 };
 
-// Check the user's spelling
+const userSpelling = ref(Array(correctWord.value.length).fill(''));
+
+// In the checkSpelling method, join the array to form the word
 const checkSpelling = async () => {
   try {
-    const response = await axios.post("http://127.0.0.1:5000/check_spelling", {
-      word: userSpelling.value,
-      correct_word: correctWord.value,
-    });
-    if (response.data.correct) {
-      currentStep.value = 3;
+    const userWord = userSpelling.value.join('').toLowerCase().trim();
+    const correctWordNormalized = correctWord.value.toLowerCase().trim();
+
+    console.log("User input word:", userWord);
+    console.log("Correct word:", correctWordNormalized);
+
+    if (userWord === correctWordNormalized) {
+      console.log("Spelling is correct. Checking with server...");
+
+      // Send both user word and correct word to the server
+      const response = await axios.post("http://127.0.0.1:5000/check_spelling", {
+        word: userWord,
+        correct_word: correctWordNormalized // Include both words
+      });
+
+      console.log("Server response:", response.data);
+
+      if (response.data.success) {
+        console.log("Spelling correct! Proceeding to step 3.");
+        currentStep.value = 3;
+      } else {
+        alert("Incorrect spelling. Try again!");
+        currentStep.value = 1;
+      }
     } else {
+      console.log("Spelling is incorrect.");
       alert("Incorrect spelling. Try again!");
+      currentStep.value = 1;
     }
-  } catch {
-    alert("Incorrect spelling. Try again!");
+  } catch (error) {
+    console.error("Error during request:", error);
+    alert("Error. Try again!");
+    currentStep.value = 1;
   }
 };
 
-
+const moveFocus = (index) => {
+  nextTick(() => {
+    const inputs = document.querySelectorAll(".letter-input");
+    if (index < inputs.length - 1 && userSpelling.value[index]) {
+      inputs[index + 1].focus();
+    }
+  });
+};
 
 // Initialize the word data
 fetchWordData();
@@ -81,7 +118,7 @@ fetchWordData();
 
       <!-- Word details step -->
       <div v-if="currentStep === 1" class="window-content">
-        <h3 class="word">{{ wordData.word }}</h3> <!-- Check that wordData.word is valid -->
+        <h3 class="word">{{ wordData.word }}</h3>
         <p class="partOfSpeech">{{ wordData.part_of_speech }}</p>
         <p class="definition"><strong>Definition:</strong> {{ wordData.definition }}</p>
         <p class="example"><strong>Example:</strong> {{ wordData.example_sentence }}</p>
@@ -89,20 +126,18 @@ fetchWordData();
         <button class="continue-button" @click="moveToSpellingStep">Continue</button>
       </div>
 
-
       <!-- Spelling step -->
       <div v-if="currentStep === 2" class="window-content">
-        <h3>How do you spell the word?</h3>
+        <h3 class="spelling-h3">How do you spell the word?</h3>
         <div class="spelling-box">
-          <!-- Only render the inputs if correctWord is available -->
           <span v-if="correctWord" v-for="(char, index) in correctWord.split('')" :key="index">
             <input
                 v-model="userSpelling[index]"
                 type="text"
                 maxlength="1"
                 class="letter-input"
-                :disabled="userSpelling[index] !== ''"
                 :placeholder="char === ' ' ? ' ' : '_'"
+                @input="moveFocus(index)"
             />
           </span>
         </div>
@@ -110,11 +145,16 @@ fetchWordData();
       </div>
 
       <!-- Quiz step -->
-      <div v-if="currentStep === 3" class="window-content">
+      <div v-if="currentStep === 3 && questions.length > 0" class="window-content">
         <h3 v-for="(question, index) in questions" :key="question.question_id">{{ question.text }}</h3>
-        <div v-for="option in question.options" :key="option">
-          <input type="radio" :id="'option-' + index + option" :value="option" v-model="userAnswer"/>
-          <label :for="'option-' + index + option">{{ option }}</label>
+        <div v-for="(option, idx) in question.options" :key="option">
+          <input
+              type="radio"
+              :id="'option-' + index + '-' + idx"
+              :value="option"
+              v-model="userAnswer[question.question_id]"
+          />
+          <label :for="'option-' + index + '-' + idx">{{ option }}</label>
         </div>
         <button class="continue-button" @click="submitAnswer(question)">Submit Answer</button>
       </div>
@@ -170,6 +210,12 @@ fetchWordData();
   padding: 20px 0 20px 0;
   height: 80%;
 }
+.spelling-h3 {
+  text-align: center;
+  font-size: 3vw;
+  margin-bottom: 2vh;
+  color: #4A4A4A;
+}
 .word {
   display: flex;
   justify-content: left;
@@ -191,10 +237,6 @@ h2 {
   font-size: 4vh;
   color: #4A4A4A;
 }
-.continue-button-container {
-  border-top: 2px solid #4A4A4A;
-  padding-top: 10px;
-}
 .continue-button {
   width: 100%;
   padding: 10px;
@@ -210,15 +252,12 @@ h2 {
 .continue-button:hover {
   background-color: #6aa7d1;
 }
-
-/* Styling for the spelling box */
 .spelling-box {
   display: flex;
   gap: 5px;
   justify-content: center;
   margin-bottom: 20px;
 }
-
 .letter-input {
   width: 3rem;
   height: 3rem;
@@ -227,9 +266,7 @@ h2 {
   border: 1px solid #4A4A4A;
   border-radius: 5px;
 }
-
 .letter-input:disabled {
   background-color: #f0f0f0;
   color: #007BFF;
-}
-</style>
+}</style>

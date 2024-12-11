@@ -139,7 +139,7 @@ def start_new_word():
             'definition': definition,
             'part_of_speech': part_of_speech,
             'example_sentence': example_sentence,
-            'synonyms', synonyms,
+            'synonyms': synonyms,
             'spelling': word
         }
 
@@ -184,6 +184,32 @@ def update_user_progress():
     except Exception as e:
         connection.rollback()
         return jsonify({'error': f'Failed to update progress: {str(e)}'}), 500
+
+
+@app.route('/check_spelling', methods=['POST'])
+def check_spelling():
+    data = request.get_json()
+
+    print("Received data:", data)  # Debugging line to print received data
+
+    word = data.get('word', '').strip().lower()  # User input
+    correct_word = data.get('correct_word', '').strip().lower()  # The correct word to compare
+
+    # Check if both 'word' and 'correct_word' are provided
+    if word and correct_word:
+        if word == correct_word:
+            return jsonify({"success": True, "message": "Spelling is correct!"})
+        else:
+            return jsonify({"success": False, "message": "Incorrect spelling."})
+    else:
+        return jsonify({"success": False, "message": "Invalid input, word or correct_word missing."})
+
+
+
+
+
+
+
 
 
 # Run the app
