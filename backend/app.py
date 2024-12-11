@@ -139,7 +139,7 @@ def start_new_word():
             'definition': definition,
             'part_of_speech': part_of_speech,
             'example_sentence': example_sentence,
-            'synonyms', synonyms,
+            'synonyms': synonyms,
             'spelling': word
         }
 
