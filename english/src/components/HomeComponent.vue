@@ -2,13 +2,12 @@
 import NavBar from "./NavBarComponent.vue";
 </script>
 
-
 <template>
   <NavBar />
   <main class="container">
     <div class="introduction">
       <h1>Welcome to JoJaMi</h1>
-      <h5>Pronounced joe&bull;jah&bull;mee</h5>
+      <h3>Pronounced joe&bull;jah&bull;mee</h3>
       <br>
         <p>Welcome to our English assistant website! This website is designed to assist middle school and lower high school students expand their knowledge of topics including Latin and Greek roots, general vocabulary, figures of speech, and commonly confused words. Each of these topics will be available for learners to engage in at any time, but the preferred progression is for learners to move from the roots, to vocabulary, to figures speech, and to end their learning journey with commonly confused words. But again, learners may learn whatever they choose at any time!</p>
       <br>
@@ -45,7 +44,6 @@ import NavBar from "./NavBarComponent.vue";
   padding-top: calc(4vh);
 }
 main div {
-  display: flex;
   text-align: center;
   height: auto;
   width: 100%;
@@ -57,55 +55,58 @@ main div {
   text-align: center;
   margin: 4% 0;
 }
-.introduction h1 {
-  padding: 2%;
-  font-size: 3rem;
+h1 {
+  text-align: center;
+  position: relative;
+  color: #4A4A4A;
+  width: 50%;
+  margin-bottom: 2%;
+  font-size: 5vw;
 }
-.introduction h5 {
+h1::after{
+  content: "";
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 8px;
+  background-color: #4A4A4A;
+  margin-top: 5px;
+  margin-bottom: .3%;
+}
+h3 {
   padding: 0 0 .5%;
+}
+p {
+  font-size: 1.125vw;
+  color: #4A4A4A;
 }
 .introduction p {
   width: 40%;
 }
 .roots, .vocabulary, .figuresOfSpeech, .commonlyConfusedWords {
   display: flex;
-  justify-content: space-between;
   text-align: center;
   align-items: center;
   flex-wrap: wrap;
 }
-.roots {
+.roots, .figuresOfSpeech {
   flex-direction: row;
+  justify-content: space-around;
   background: #bbe3f8;
 }
-.vocabulary {
+.vocabulary, .commonlyConfusedWords {
   flex-direction: row-reverse;
+  justify-content: space-around;
   background: #c7efd2;
 }
 .figuresOfSpeech {
-  flex-direction: row;
   background: #d1d1e1;
 }
 .commonlyConfusedWords {
-  flex-direction: row-reverse;
   background: #c9e4f3;
-}
-.roots h2  {
-  padding: 0 0 0 9.5rem;
-}
-.vocabulary h2 {
-  padding: 0 13rem 0 0;
-}
-.figuresOfSpeech h2{
-  padding: 0 0 0 11rem;
-}
-.commonlyConfusedWords h2 {
-  padding: 0 7rem 0 0;
 }
 .roots p, .figuresOfSpeech p, .vocabulary p, .commonlyConfusedWords p{
   padding: 2%;
   width: 25%;
-  color: whitesmoke;
-  font-size: 1rem;
 }
 </style>

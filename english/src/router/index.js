@@ -5,7 +5,6 @@ import VocabularyComponent from '../components/VocabularyComponent.vue';
 import FiguresOfSpeechComponent from '../components/FiguresOfSpeechComponent.vue';
 import ConfusingWordsComponent from '../components/ConfusingWordsComponent.vue';
 import AccountComponent from '../components/AccountComponent.vue';
-import PracticeWindowComponent from '../components/PracticeWindowComponent.vue';
 import VocabPracticeComponent from '../components/VocabPracticeComponent.vue';
 
 const routes = [
@@ -15,7 +14,6 @@ const routes = [
     { path: '/FiguresOfSpeechComponent', component: FiguresOfSpeechComponent },
     { path: '/ConfusingWordsComponent', component: ConfusingWordsComponent },
     { path: '/AccountComponent', component: AccountComponent },
-    { path: '/PracticeWindowComponent', component: PracticeWindowComponent },
     { path: '/VocabPracticeComponent', component: VocabPracticeComponent },
 ];
 

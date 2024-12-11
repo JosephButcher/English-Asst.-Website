@@ -63,7 +63,7 @@ import vocabExample from '../assets/images/vocabExample.png';
 .example-window img {
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 h1 {
   text-align: center;
