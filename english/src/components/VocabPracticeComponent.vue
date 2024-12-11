@@ -11,33 +11,41 @@ const closeWindow = () => {
 const currentStep = ref(1); // 1: Word details, 2: Spelling, 3: Quiz
 const wordData = ref({});
 const questions = ref([]);
-const userSpelling = ref("");
+const userSpelling = ref(""); // Will hold the typed word
 const userAnswer = ref("");
 const correctWord = ref("");
 const userProgress = ref({});
 
+// Fetch word data from the server
 const fetchWordData = async () => {
   try {
     const response = await axios.get("http://your-flask-server-url/start_new_word");
-    wordData.value = response.data;
-    correctWord.value = wordData.value.word;
-    questions.value = wordData.value.questions.map((question) => ({
-      ...question,
-      options: shuffleOptions([question.correct_answer, "Option B", "Option C", "Option D"]),
-    }));
-    userProgress.value = response.data.user_progress;
-    currentStep.value = userProgress.value.current_step;
+    if (response.data && response.data.word) {
+      wordData.value = response.data;
+      correctWord.value = wordData.value.word; // Ensure correctWord is assigned a valid string
+      questions.value = wordData.value.questions.map((question) => ({
+        ...question,
+        options: shuffleOptions([question.correct_answer, "Option B", "Option C", "Option D"]),
+      }));
+      userProgress.value = response.data.user_progress;
+      currentStep.value = userProgress.value.current_step;
+    } else {
+      throw new Error("No word data found.");
+    }
   } catch (error) {
     console.error("Error fetching word data:", error);
   }
 };
 
+// Shuffle answer options
 const shuffleOptions = (options) => options.sort(() => Math.random() - 0.5);
 
+// Move to the spelling step
 const moveToSpellingStep = () => {
   currentStep.value = 2;
 };
 
+// Check the user's spelling
 const checkSpelling = async () => {
   try {
     const response = await axios.post("http://your-flask-server-url/check_spelling", {
@@ -79,6 +87,7 @@ const submitAnswer = async (question) => {
   }
 };
 
+// Initialize the word data
 fetchWordData();
 </script>
 
@@ -90,24 +99,40 @@ fetchWordData();
         <button class="exit-button" @click="closeWindow">Exit</button>
       </div>
 
+      <!-- Word details step -->
       <div v-if="currentStep === 1" class="window-content">
         <h3 class="word">{{ wordData.word }}</h3>
-        <p>{{ wordData.part_of_speech }}</p>
-        <p><strong>Definition:</strong> {{ wordData.definition }}</p>
-        <p><strong>Example Sentence:</strong> {{ wordData.example_sentence }}</p>
+        <p class="partOfSpeech">{{ wordData.part_of_speech }}</p>
+        <p class="definition"><strong>Definition:</strong> {{ wordData.definition }}</p>
+        <p class="example"><strong>Example:</strong> {{ wordData.example_sentence }}</p>
+        <p class="synonyms"><strong>Synonyms:</strong> {{ wordData.synonyms }}</p>
         <button class="continue-button" @click="moveToSpellingStep">Continue</button>
       </div>
 
+      <!-- Spelling step -->
       <div v-if="currentStep === 2" class="window-content">
         <h3>How do you spell the word?</h3>
-        <input v-model="userSpelling" type="text" placeholder="Type the word here" />
+        <div class="spelling-box">
+          <!-- Only render the inputs if correctWord is available -->
+          <span v-if="correctWord" v-for="(char, index) in correctWord.split('')" :key="index">
+            <input
+                v-model="userSpelling[index]"
+                type="text"
+                maxlength="1"
+                class="letter-input"
+                :disabled="userSpelling[index] !== ''"
+                :placeholder="char === ' ' ? ' ' : '_'"
+            />
+          </span>
+        </div>
         <button class="continue-button" @click="checkSpelling">Check Spelling</button>
       </div>
 
+      <!-- Quiz step -->
       <div v-if="currentStep === 3" class="window-content">
         <h3 v-for="(question, index) in questions" :key="question.question_id">{{ question.text }}</h3>
         <div v-for="option in question.options" :key="option">
-          <input type="radio" :id="'option-' + index + option" :value="option" v-model="userAnswer" />
+          <input type="radio" :id="'option-' + index + option" :value="option" v-model="userAnswer"/>
           <label :for="'option-' + index + option">{{ option }}</label>
         </div>
         <button class="continue-button" @click="submitAnswer(question)">Submit Answer</button>
@@ -128,7 +153,7 @@ fetchWordData();
   justify-content: center;
   align-items: center;
 }
-.window{
+.window {
   width: 65vw;
   height: 85vh;
   background: whitesmoke;
@@ -172,11 +197,6 @@ fetchWordData();
   color: #007BFF;
   margin: 1vh auto 1vh 1vh;
 }
-.partOfSpeech {
-  display: flex;
-  justify-content: left;
-  align-items: flex-start;
-}
 .partOfSpeech, .definition, .example, .synonyms {
   font-size: 2.5vh;
   margin: 3vh auto 3vh 1vh;
@@ -208,5 +228,27 @@ h2 {
 }
 .continue-button:hover {
   background-color: #6aa7d1;
+}
+
+/* Styling for the spelling box */
+.spelling-box {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.letter-input {
+  width: 3rem;
+  height: 3rem;
+  text-align: center;
+  font-size: 2rem;
+  border: 1px solid #4A4A4A;
+  border-radius: 5px;
+}
+
+.letter-input:disabled {
+  background-color: #f0f0f0;
+  color: #007BFF;
 }
 </style>

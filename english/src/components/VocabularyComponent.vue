@@ -25,7 +25,7 @@ import vocabExample from '../assets/images/vocabExample.png';
         <p>If a learner fails the spelling question, they will simply be redirected to the previous screen.</p>
       </div>
     </div>
-    <button @click="$router.push('/PracticePageComponent')" class="practice-button">Start Practicing</button>
+    <button @click="$router.push('/VocabPracticeComponent')" class="practice-button">Start Practicing</button>
   </div>
 </template>
 

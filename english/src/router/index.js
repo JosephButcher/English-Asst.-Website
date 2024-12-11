@@ -6,7 +6,7 @@ import FiguresOfSpeechComponent from '../components/FiguresOfSpeechComponent.vue
 import ConfusingWordsComponent from '../components/ConfusingWordsComponent.vue';
 import AccountComponent from '../components/AccountComponent.vue';
 import PracticeWindowComponent from '../components/PracticeWindowComponent.vue';
-import PracticePageComponent from '../components/PracticePageComponent.vue';
+import VocabPracticeComponent from '../components/VocabPracticeComponent.vue';
 
 const routes = [
     { path: '/', component: HomeComponent },
@@ -16,7 +16,7 @@ const routes = [
     { path: '/ConfusingWordsComponent', component: ConfusingWordsComponent },
     { path: '/AccountComponent', component: AccountComponent },
     { path: '/PracticeWindowComponent', component: PracticeWindowComponent },
-    { path: '/PracticePageComponent', component: PracticePageComponent },
+    { path: '/VocabPracticeComponent', component: VocabPracticeComponent },
 ];
 
 const router = createRouter({
