@@ -92,10 +92,10 @@ fetchWordData();
 
       <div v-if="currentStep === 1" class="window-content">
         <h3 class="word">{{ wordData.word }}</h3>
+        <p>{{ wordData.part_of_speech }}</p>
         <p><strong>Definition:</strong> {{ wordData.definition }}</p>
-        <p><strong>Part of Speech:</strong> {{ wordData.part_of_speech }}</p>
         <p><strong>Example Sentence:</strong> {{ wordData.example_sentence }}</p>
-        <button class="continue-button" @click="moveToSpellingStep">Move On</button>
+        <button class="continue-button" @click="moveToSpellingStep">Continue</button>
       </div>
 
       <div v-if="currentStep === 2" class="window-content">
